@@ -285,7 +285,7 @@ class Request(object):
         req = requests.patch(self.url,
                              headers=headers,
                              data=json.dumps(data),
-                             ssl_verify=self.ssl_verify)
+                             verify=self.ssl_verify)
         if req.ok:
             return json.loads(req.text)
         else:
