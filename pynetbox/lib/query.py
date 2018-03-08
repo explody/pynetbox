@@ -282,7 +282,10 @@ class Request(object):
             headers.update(
                 {'X-Session-Key': self.session_key}
             )
-        req = requests.patch(self.url, headers=headers, data=json.dumps(data))
+        req = requests.patch(self.url,
+                             headers=headers,
+                             data=json.dumps(data),
+                             ssl_verify=self.ssl_verify)
         if req.ok:
             return json.loads(req.text)
         else:
