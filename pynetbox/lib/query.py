@@ -19,6 +19,15 @@ from six.moves.urllib.parse import urlencode
 import requests
 
 
+def url_param_builder(param_dict):
+    '''Builds url parameters
+
+    Creates URL paramters (e.g. '.../?xyz=r21&abc=123') from a dict
+    passed in param_dict
+    '''
+    return '?{}'.format(urlencode(param_dict))
+
+
 class RequestError(Exception):
     """Basic Request Exception
 
@@ -142,9 +151,9 @@ class Request(object):
             for k, v in input.items():
                 if isinstance(v, list):
                     for i in v:
-                        yield "{}={}".format(k, i)
+                        yield urlencode({k: i})
                 else:
-                    yield "{}={}".format(k, v)
+                    yield urlencode({k: v})
 
         if self.key:
             return '{}/{key}/'.format(

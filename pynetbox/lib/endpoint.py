@@ -15,7 +15,7 @@ limitations under the License.
 '''
 from collections import defaultdict
 
-from pynetbox.lib.query import Request
+from pynetbox.lib.query import Request, url_param_builder
 from pynetbox.lib.response import Record, IPRecord
 
 CACHE = defaultdict(list)
@@ -402,14 +402,25 @@ class DetailEndpoint(object):
             ssl_verify=self.ssl_verify,
         )
 
-    def list(self):
+    def list(self, **kwargs):
         """The view operation for a detail endpoint
 
         Returns the response from NetBox for a detail endpoint.
 
+        :args \**kwargs: key/value pairs that get converted into url
+            parameters when passed to the endpoint.
+            E.g. ``.list(method='get_facts')`` would be converted to
+            ``.../?method=get_facts``.
+
         :returns: A dictionary or list of dictionaries its retrieved
             from NetBox.
         """
+        if kwargs:
+            self.request_kwargs['base'] = '{}{}'.format(
+                self.url,
+                url_param_builder(kwargs)
+            )
+
         return Request(**self.request_kwargs).get()
 
     def create(self, data={}):
@@ -426,3 +437,11 @@ class DetailEndpoint(object):
             NetBox.
         """
         return Request(**self.request_kwargs).post(data)
+
+
+class RODetailEndpoint(DetailEndpoint):
+
+    def create(self, data={}):
+        raise NotImplementedError(
+            'Writes are not supported for this endpoint.'
+        )

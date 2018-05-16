@@ -175,12 +175,12 @@ class DeviceTestCase(unittest.TestCase, GenericTest):
         return_value=Response(fixture='dcim/devices.json')
     )
     def test_multi_filter(self, mock):
-        ret = getattr(nb, self.name).filter(role=['test', 'test1'], site='TEST1')
+        ret = getattr(nb, self.name).filter(role=['test', 'test1'], site='TEST#1')
         self.assertTrue(ret)
         self.assertTrue(isinstance(ret, list))
         self.assertTrue(isinstance(ret[0], self.ret))
         mock.assert_called_with(
-            'http://localhost:8000/api/{}/{}/?role=test&role=test1&site=TEST1'.format(
+            'http://localhost:8000/api/{}/{}/?role=test&role=test1&site=TEST%231'.format(
                 self.app,
                 self.name.replace('_', '-')
             ),
@@ -255,6 +255,23 @@ class DeviceTestCase(unittest.TestCase, GenericTest):
             ret.rack.role,
             self.ret
         ))
+
+    @patch(
+        'pynetbox.lib.query.requests.get',
+        side_effect=[
+            Response(fixture='dcim/device.json'),
+            Response(fixture='dcim/napalm.json'),
+        ]
+    )
+    def test_get_napalm(self, mock):
+        test = nb.devices.get(1)
+        ret = test.napalm.list(method='get_facts')
+        mock.assert_called_with(
+            'http://localhost:8000/api/dcim/devices/1/napalm/?method=get_facts',
+            headers=HEADERS
+        )
+        self.assertTrue(ret)
+        self.assertTrue(ret['get_facts'])
 
 
 class SiteTestCase(unittest.TestCase, GenericTest):
